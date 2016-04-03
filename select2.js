@@ -2372,6 +2372,9 @@ the specific language governing permissions and limitations under the Apache Lic
         getPlaceholder: function() {
             // if a placeholder is specified on a single select without a valid placeholder option ignore it
             if (this.select) {
+                if (typeof this.opts.placeholder != 'undefined' && this.select[0].multiple) {
+                    return this.opts.placeholder;
+                }
                 if (this.getPlaceholderOption() === undefined) {
                     return undefined;
                 }
@@ -2383,6 +2386,8 @@ the specific language governing permissions and limitations under the Apache Lic
         // single
         setPlaceholder: function () {
             var placeholder = this.getPlaceholder();
+            console.log(placeholder);
+            console.log(this.isPlaceholderOptionSelected());
 
             if (this.isPlaceholderOptionSelected() && placeholder !== undefined) {
 
@@ -2447,15 +2452,40 @@ the specific language governing permissions and limitations under the Apache Lic
             if (!this.triggerSelect(data)) { return; }
 
             var old = this.opts.element.val(),
-                oldData = this.data();
+                oldData = this.data(),
+                value = this.id(data),
+                self = this;
 
-            this.opts.element.val(this.id(data));
-            this.updateSelection(data);
+            var newData = value;
+            var inputOption = $(options.target).find('input.select2-option');
+            if (inputOption.length) {
+                var checked = inputOption.prop('checked');
+                inputOption.prop('checked', !checked);
+                newData = [];
+                if (old) {
+                    newData = newData.concat(old);
+                }
+                var index = newData.indexOf(value + '');
+                if (checked) {
+                    if (index >= 0) {
+                        newData.splice(index, 1);
+                    }
+                } else if (index == -1) {
+                    newData.push(value);
+                    oldData = null;
+                }
+            }
 
-            this.opts.element.trigger({ type: "select2-selected", val: this.id(data), choice: data });
+            this.opts.element.val(newData);
+            data = this.updateSelectionByOptions();
+
+            this.opts.element.trigger({ type: "select2-selected", val: value, choice: data });
 
             this.nextSearchTerm = this.opts.nextSearchTerm(data, this.search.val());
-            this.close();
+
+            if (this.opts.closeOnSelect !== false) {
+                this.close();
+            }
 
             if ((!options || !options.noFocus) && this.opts.shouldFocusInput(this)) {
                 this.focusser.focus();
@@ -2469,16 +2499,24 @@ the specific language governing permissions and limitations under the Apache Lic
         // single
         updateSelection: function (data) {
 
-            var container=this.selection.find(".select2-chosen"), formatted, cssClass;
+            var container=this.selection.find(".select2-chosen"), formatted = [], cssClass;
+            var values = [];
 
             this.selection.data("select2-data", data);
 
             container.empty();
             if (data !== null) {
-                formatted=this.opts.formatSelection(data, container, this.opts.escapeMarkup);
+                values = values.concat(data);
+                for (var i in values) {
+                    //if (formatted.length > 2) {
+                    //    formatted.push('..');
+                    //    break;
+                    //}
+                    formatted.push(this.opts.formatSelection(values[i], container, this.opts.escapeMarkup));
+                }
             }
-            if (formatted !== undefined) {
-                container.append(formatted);
+            if (formatted.length) {
+                container.html(formatted.join('; '));
             }
             cssClass=this.opts.formatSelectionCssClass(data, container);
             if (cssClass !== undefined) {
@@ -2492,11 +2530,25 @@ the specific language governing permissions and limitations under the Apache Lic
             }
         },
 
+        //custom
+        updateSelectionByOptions: function() {
+            var data = [], self = this;
+            this.select.find("option").filter(function() { return this.selected }).each2(function (i, elm) {
+                //data = self.optionToData(elm);
+                //return false;
+                data.push(self.optionToData(elm));
+            });
+            this.updateSelection(data);
+
+            return this.select.is('[multiple]') ? data : data.pop();
+        },
+
         // single
         val: function () {
             var val,
                 triggerChange = false,
-                data = null,
+                //data = null,
+                data = [],
                 self = this,
                 oldData = this.data();
 
@@ -2511,13 +2563,8 @@ the specific language governing permissions and limitations under the Apache Lic
             }
 
             if (this.select) {
-                this.select
-                    .val(val)
-                    .find("option").filter(function() { return this.selected }).each2(function (i, elm) {
-                        data = self.optionToData(elm);
-                        return false;
-                    });
-                this.updateSelection(data);
+                this.select.val(val);
+                data = this.updateSelectionByOptions();
                 this.setPlaceholder();
                 if (triggerChange) {
                     this.triggerChange({added: data, removed:oldData});
@@ -3381,7 +3428,7 @@ the specific language governing permissions and limitations under the Apache Lic
                 opts.element = $(this);
 
                 if (opts.element.get(0).tagName.toLowerCase() === "select") {
-                    multiple = opts.element.prop("multiple");
+                    multiple = opts.element.prop("multiple") && opts.closeOnSelect !== false;
                 } else {
                     multiple = opts.multiple || false;
                     if ("tags" in opts) {opts.multiple = multiple = true;}
@@ -3434,7 +3481,17 @@ the specific language governing permissions and limitations under the Apache Lic
         formatResult: function(result, container, query, escapeMarkup) {
             var markup=[];
             markMatch(this.text(result), query.term, markup, escapeMarkup);
-            return markup.join("");
+            var text = markup.join("");
+            if (this.element.is('[multiple]') && this.closeOnSelect === false) {
+                var checkbox = $('<input type="checkbox" class="select2-option" />');
+                if ([].concat(this.element.val()).indexOf(result.id) != -1) {
+                    checkbox.attr('checked', 'checked');
+                }
+                text = $('<label>')
+                    .append(checkbox)
+                    .append(text).html();
+            }
+            return text;
         },
         transformVal: function(val) {
             return $.trim(val);
