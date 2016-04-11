@@ -1886,6 +1886,9 @@ the specific language governing permissions and limitations under the Apache Lic
         // abstract
         getPlaceholderOption: function() {
             if (this.select) {
+                if (this.select[0].multiple) {
+                    return $('<option value>');
+                }
                 var firstOption = this.select.children('option').first();
                 if (this.opts.placeholderOption !== undefined ) {
                     //Determine the placeholder option based on the specified placeholderOption setting
@@ -2386,8 +2389,6 @@ the specific language governing permissions and limitations under the Apache Lic
         // single
         setPlaceholder: function () {
             var placeholder = this.getPlaceholder();
-            console.log(placeholder);
-            console.log(this.isPlaceholderOptionSelected());
 
             if (this.isPlaceholderOptionSelected() && placeholder !== undefined) {
 
