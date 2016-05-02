@@ -2495,6 +2495,10 @@ the specific language governing permissions and limitations under the Apache Lic
             if (!equal(old, this.id(data))) {
                 this.triggerChange({ added: data, removed: oldData });
             }
+
+            if (!data.length) {
+                this.setPlaceholder();
+            }
         },
 
         // single
