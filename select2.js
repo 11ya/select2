@@ -2458,7 +2458,10 @@ the specific language governing permissions and limitations under the Apache Lic
                 self = this;
 
             var newData = value;
-            var inputOption = $(options.target).find('input.select2-option');
+            var inputOption = $(options.target);
+            if (!inputOption.hasClass('select2-option')) {
+                inputOption = inputOption.find('.select2-option');
+            }
             if (inputOption.length) {
                 var checked = inputOption.prop('checked');
                 inputOption.prop('checked', !checked);
