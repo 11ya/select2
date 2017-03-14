@@ -970,6 +970,9 @@ the specific language governing permissions and limitations under the Apache Lic
                             formatted=opts.formatResult(result, label, query, self.opts.escapeMarkup);
                             if (formatted!==undefined) {
                                 label.html(formatted);
+                                if ([].concat(self.opts.element.val()).indexOf(result.id) != -1) {
+                                    label.find('.select2-option').attr('checked', 'checked');
+                                }
                                 node.append(label);
                             }
 
@@ -3492,9 +3495,6 @@ the specific language governing permissions and limitations under the Apache Lic
             var text = markup.join("");
             if (this.element.is('[multiple]') && this.closeOnSelect === false) {
                 var checkbox = $('<input type="checkbox" class="select2-option" />');
-                if ([].concat(this.element.val()).indexOf(result.id) != -1) {
-                    checkbox.attr('checked', 'checked');
-                }
                 text = $('<label>')
                     .append(checkbox)
                     .append(text).html();
