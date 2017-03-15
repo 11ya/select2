@@ -971,7 +971,7 @@ the specific language governing permissions and limitations under the Apache Lic
                             if (formatted!==undefined) {
                                 label.html(formatted);
                                 if ([].concat(self.opts.element.val()).indexOf(result.id) != -1) {
-                                    label.find('.select2-option').attr('checked', 'checked');
+                                    label.find(':checkbox').attr('checked', 'checked');
                                 }
                                 node.append(label);
                             }
@@ -2462,8 +2462,8 @@ the specific language governing permissions and limitations under the Apache Lic
 
             var newData = value;
             var inputOption = $(options.target);
-            if (!inputOption.hasClass('select2-option')) {
-                inputOption = inputOption.find('.select2-option');
+            if (!inputOption.is(':checkbox')) {
+                inputOption = inputOption.closest('[role="option"]').find(':checkbox');
             }
             if (inputOption.length) {
                 var checked = inputOption.prop('checked');
@@ -3494,7 +3494,7 @@ the specific language governing permissions and limitations under the Apache Lic
             markMatch(this.text(result), query.term, markup, escapeMarkup);
             var text = markup.join("");
             if (this.element.is('[multiple]') && this.closeOnSelect === false) {
-                var checkbox = $('<input type="checkbox" class="select2-option" />');
+                var checkbox = $('<input type="checkbox"/>');
                 text = $('<label>')
                     .append(checkbox)
                     .append(text).html();
