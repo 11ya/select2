@@ -2461,25 +2461,27 @@ the specific language governing permissions and limitations under the Apache Lic
                 self = this;
 
             var newData = value;
-            var inputOption = $(options.target);
-            if (!inputOption.is(':checkbox')) {
-                inputOption = inputOption.closest('[role="option"]').find(':checkbox');
-            }
-            if (inputOption.length) {
-                var checked = inputOption.prop('checked');
-                inputOption.prop('checked', !checked);
-                newData = [];
-                if (old) {
-                    newData = newData.concat(old);
+            if (options) {
+                var inputOption = $(options.target);
+                if (!inputOption.is(':checkbox')) {
+                    inputOption = inputOption.closest('[role="option"]').find(':checkbox');
                 }
-                var index = newData.indexOf(value + '');
-                if (checked) {
-                    if (index >= 0) {
-                        newData.splice(index, 1);
+                if (inputOption.length) {
+                    var checked = inputOption.prop('checked');
+                    inputOption.prop('checked', !checked);
+                    newData = [];
+                    if (old) {
+                        newData = newData.concat(old);
                     }
-                } else if (index == -1) {
-                    newData.push(value);
-                    oldData = null;
+                    var index = newData.indexOf(value + '');
+                    if (checked) {
+                        if (index >= 0) {
+                            newData.splice(index, 1);
+                        }
+                    } else if (index == -1) {
+                        newData.push(value);
+                        oldData = null;
+                    }
                 }
             }
 
