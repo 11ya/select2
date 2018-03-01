@@ -2486,7 +2486,11 @@ the specific language governing permissions and limitations under the Apache Lic
             }
 
             this.opts.element.val(newData);
-            data = this.updateSelectionByOptions();
+            if (this.select) {
+                data = this.updateSelectionByOptions();
+            } else {
+                this.updateSelection(data);
+            }
 
             this.opts.element.trigger({ type: "select2-selected", val: value, choice: data });
 
